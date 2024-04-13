@@ -6,7 +6,6 @@ intents.message_content = True
 
 client = discord.Client(intents=intents)
 
-
 commands = {
     '/hello': 'Saludar',
     '/pollution': 'Definición de Contaminación',
@@ -15,8 +14,8 @@ commands = {
     '/daily': 'Obtener un consejo aleatorio diario',
     '/suggest': 'Sugerir temas o preguntas para futuras actualizaciones del bot',
     '/suggestions': 'Ver las sugerencias registradas',
+    '/clear': 'Limpiar el chat del canal actual'  # Agregar el nuevo comando
 }
-
 
 daily_tips = [
     "Apaga las luces cuando no las necesites para ahorrar energía.",
@@ -32,7 +31,6 @@ daily_tips = [
 ]
 
 used_tips = []
-
 suggestions = []
 
 @client.event
@@ -45,7 +43,7 @@ async def on_message(message):
         return
 
     if message.content.startswith('/hello'):
-        await message.channel.send(f'Hi, I\'m {client.user}! Nice to meet you, how can I help you?')
+        await message.channel.send(f'¡Hola, soy {client.user}! ¡Encantado de conocerte, cómo puedo ayudarte?')
     elif message.content.startswith('/pollution'):
         await pollution(message.channel)
     elif message.content.startswith('/tips'):
@@ -58,15 +56,16 @@ async def on_message(message):
         suggestion = message.content[len('/suggest'):].strip()
         if suggestion:
             suggestions.append(suggestion)
+            print("Sugerencia registrada:", suggestion)  
             await message.channel.send("¡Gracias por tu sugerencia! La hemos registrado para futuras actualizaciones.")
-        else:
-            await message.channel.send("Por favor, proporciona una sugerencia después de `/suggest`.")
-    elif message.content.startswith('/suggestions'):
+    elif message.content.startswith('/suggestions'):  
         await send_suggestions(message.channel)
+    elif message.content.startswith('/clear'):  # Agregar manejo para el comando '/clear'
+        await clear_messages(message.channel)
     elif message.content.startswith('/help'):
         await send_help(message.channel)
     else:
-        await message.channel.send("No puedo procesar este comando, ¡lo siento!")
+        await message.channel.send("¡No puedo procesar este comando, lo siento!")
 
 async def send_help(channel):
     help_message = "Comandos disponibles:\n"
@@ -81,7 +80,7 @@ async def send_tips(channel):
     await channel.send(tips_message)
 
 async def pollution(channel):
-    pollution_definition = "Pollution is the introduction of contaminants into the natural environment that cause adverse change."
+    pollution_definition = "La contaminación es la introducción de contaminantes en el medio ambiente natural que causa un cambio adverso."
     await channel.send(pollution_definition)
 
 async def recycle(channel):
@@ -100,7 +99,6 @@ async def daily_tip(channel):
         await channel.send("¡Ya has recibido todos los consejos! ¡Vuelve mañana para uno nuevo!")
         return
     
-
     tip = random.choice([t for t in daily_tips if t not in used_tips])
     used_tips.append(tip)
     
@@ -114,5 +112,7 @@ async def send_suggestions(channel):
     else:
         await channel.send("No hemos recibido ninguna sugerencia hasta el momento.")
 
+async def clear_messages(channel):
+    await channel.purge(limit=100)  # Elimina hasta 100 mensajes del canal
 
 client.run('token')
